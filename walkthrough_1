@@ -1,0 +1,37 @@
+# DhurandarAI Walkthrough
+
+This document outlines the foundation built for the "DhurandarAI – AI-powered Network Operations Assistant" project.
+
+## Changes Made
+
+1.  **Mininet Topology:**
+    *   Created [mininet_topo.py](file:///d:/hacks/Dhurandar_AI/mininet_topo.py) using the Python `mininet` API.
+    *   Topology features a server (`s1`), three clients (`h1`, `h2`, `h3`), an internal switch, a simulated firewall `fw1` (implemented via an OVS switch), and a Linux router `r1` with IP forwarding enabled.
+
+2.  **Log Generator:**
+    *   Developed [log_generator.py](file:///d:/hacks/Dhurandar_AI/log_generator.py) to simulate enterprise structured JSON logs.
+    *   Logs are composed of `timestamp`, `device`, `event`, `value`, and `severity`.
+    *   Implemented SQLite integration to store these JSON logs in `dhurandar_logs.db`.
+
+3.  **Event Simulator:**
+    *   Built [simulator.py](file:///d:/hacks/Dhurandar_AI/simulator.py) to randomly simulate events.
+    *   Includes definitions for:
+        *   `ABNORMAL_LOGIN` (e.g. 11 attempts on `fw1`)
+        *   `CPU_SPIKE`
+        *   `SUSPICIOUS_TRAFFIC` (e.g. sudden 1209 Mbps spike on `h1`)
+        *   `NORMAL_HEARTBEAT`
+
+4.  **Event Correlation Engine:**
+    *   Developed [correlation_engine.py](file:///d:/hacks/Dhurandar_AI/correlation_engine.py) to read real-time events and alert on suspicious patterns.
+    *   Implemented a modular Rule base class (`Rule`) and created a concrete implementation `CompromisedMachineRule`.
+    *   This rule evaluates historical events over a configurable time window continuously, correctly detecting the presence of `ABNORMAL_LOGIN`, `CPU_SPIKE`, AND `SUSPICIOUS_TRAFFIC` on the same device.
+    *   Once diagnosed, it outputs a sophisticated JSON report with incident details and an aggregated confidence score.
+
+## Validation Results
+
+*   **Database Verification**: Successfully verified that running `simulator.py` populates the SQLite database (`dhurandar_logs.db`).
+*   **Log Structure**: Verified that the logs written inside the database contain valid JSON conforming to the requested schema. Sample query results confirmed expected records:
+    > `(1, '2026-03-17T04:30:45.242383Z', 'h2', 'SUSPICIOUS_TRAFFIC', 957.0, 'high', '{"timestamp": "..."}')`
+*   **Correlation Verification**: Injected test events on a singular node (`WS-23`) and executed `correlation_engine.py`. The engine successfully consolidated the events and printed a correlated diagnosis identifying the event patterns as a `"Possible Account/Machine Compromise"`.
+
+The foundation for the DhurandarAI application is fully defined! Simulated inputs and the new correlation engine are ready for your AI assistant logic to begin tracking logs dynamically!
